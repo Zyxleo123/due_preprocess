@@ -101,7 +101,7 @@ def process_vqa_line(dataset_name, split, line1, line2):
             write_index_file(dataset_name, pdf_name, record_final["id"], split_name)
 
 
-def process_vqa_jsonl(dataset_name, split, line_num=None):
+def process_vqa_jsonl(dataset_name, split='', line_num=None):
     file1_path = os.path.join(os.path.abspath(""), dataset_name, split, 'document.jsonl')
     file2_path = os.path.join(os.path.abspath(""), dataset_name, split, 'documents_content.jsonl')
 
@@ -128,4 +128,5 @@ def write_index_file(dataset_name, image_file_name, json_file_name, split_name):
         index_file2.write(image_file_name + '\t' + json_file_name + '\n')
 
 
-process_vqa_jsonl("docvqa", "", 3)
+if __name__ == '__main__':
+    process_vqa_jsonl('test_data', 'test_split')
