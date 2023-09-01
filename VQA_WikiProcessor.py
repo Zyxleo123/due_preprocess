@@ -83,3 +83,4 @@ if __name__ == "__main__":
     for choice in debug_list:
         test_processor = VQA_WikiProcessor(debug_set[choice - 1])
         test_processor.process_dataset(2)
+
