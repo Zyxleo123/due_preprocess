@@ -102,6 +102,9 @@ class BaseProcessor:
 
     def process_dataset(self, num_lines):
         self.clear_index_files()
+        if not os.path.exists(self.dataset_name):
+            raise FileNotFoundError(f"Dataset '{self.dataset_name}' not found."
+                                    f"Please create an empty directory and add necessary pdfs")
         if not os.path.exists(os.path.join(self.dataset_name, 'jsons')):
             os.mkdir(os.path.join(self.dataset_name, 'jsons'))
         if not os.path.exists(os.path.join(self.dataset_name, 'images')):
