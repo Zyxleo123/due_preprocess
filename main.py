@@ -8,8 +8,8 @@ ROOT = os.getcwd()
 PDFS_PATH = os.path.join(ROOT, 'pdfs')
 JSONS_PATH = os.path.join(ROOT, 'JSONS')
 IMAGES_PATH = os.path.join(ROOT,  'IMAGES')
+DATASET_BASE = os.path.join(ROOT, 'DUE')
 INDEX_PATH = ROOT
-DATASET_BASE = ROOT
 
 
 def save_image(pdf_name):
@@ -102,8 +102,8 @@ def process_vqa_line(dataset_name, split, line1, line2):
 
 
 def process_vqa_jsonl(dataset_name, split='', line_num=None):
-    file1_path = os.path.join(os.path.abspath(""), dataset_name, split, 'document.jsonl')
-    file2_path = os.path.join(os.path.abspath(""), dataset_name, split, 'documents_content.jsonl')
+    file1_path = os.path.join(DATASET_BASE, dataset_name, split, 'document.jsonl')
+    file2_path = os.path.join(DATASET_BASE, dataset_name, split, 'documents_content.jsonl')
 
     with open(file1_path, 'r', encoding="utf-8") as file1, open(file2_path, 'r', encoding="utf-8") as file2:
         for i, (line1, line2) in enumerate(zip(file1, file2)):

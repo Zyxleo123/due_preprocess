@@ -3,8 +3,8 @@
 ## PDF文件
     目前需要把所有数据集的PDF文件统一放到同一个目录下
 ## 数据集
-    一个数据集以 数据集名为一级目录（类似docvqa)/split名为二级目录（类似train）/两个jsonl文件放置其下(document.jsonl/documents_content.jsonl)
-    如果需要在上述一级目录之上再添加一级，需要在源文件中修改路径"ROOT"
+    一个数据集以 ROOT/数据集作为一级目录（类似docvqa)/split为二级目录（类似train）/两个jsonl文件放置其下(document.jsonl/documents_content.jsonl)
+    源文件中可修改"ROOT",默认./DUE
 ## 输出文件
     一份pdf对应一份png；一行jsonl对应（query_num * OCR_num)个json文件
 ## 主函数使用说明
