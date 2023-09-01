@@ -7,7 +7,7 @@ from pdf2image import convert_from_path
 ROOT = os.getcwd()
 PDFS_PATH = os.path.join(ROOT, 'pdfs')
 JSONS_PATH = os.path.join(ROOT, 'JSONS')
-IMAGES_PATH = os.path.join(ROOT,  'IMAGES')
+IMAGES_PATH = os.path.join(ROOT, 'IMAGES')
 DATASET_BASE = os.path.join(ROOT, 'DUE')
 INDEX_PATH = ROOT
 
