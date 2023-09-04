@@ -1,6 +1,5 @@
 import os
 import json
-import sys
 from copy import deepcopy
 
 from tqdm import tqdm
@@ -76,7 +75,7 @@ class BaseProcessor:
         full_id = self.dataset_name + '_' + split + '_' + pdf_name
         record_init = {"id": full_id,
                        "input": {"id": full_id, "uid": full_id,
-                                 "image": self.save_image(pdf_name)}}
+                                 "img": self.save_image(pdf_name)}}
         query_num = len(record_query['annotations'])
         ocr_num = len(record_ocr["contents"])
         for ocr_id in range(ocr_num):
