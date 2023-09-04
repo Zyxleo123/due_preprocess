@@ -12,4 +12,5 @@
 ### test.py
     运行此文件，验证每一个KIE问题只有一个答案。
 ### 可能的问题
-    对于TabFact，output应该只有一个，那么使用list of strs，还是str？
+    对于TabFact，output应该只有一个，那么使用list of strs，还是str？目前使用后者。
+    对于KIE，output经过验证只有一个，那么使用list of strs，还是str？目前使用后者。
