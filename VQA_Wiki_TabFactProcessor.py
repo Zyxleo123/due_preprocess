@@ -1,12 +1,14 @@
 from BaseProcessor import BaseProcessor
 
 
-class VQA_WikiProcessor(BaseProcessor):
+class VQA_Wiki_TabFactProcessor(BaseProcessor):
     def __init__(self, dataset_folder_name):
         if dataset_folder_name not in ("docvqa", "WikiTableQuestions", "infographics_vqa", "TabFact"):
             raise ValueError(f"{dataset_folder_name} does not match this processor."
                              f" Please choose between docvqa, WikiTableQuestions, infographics_vqa,"
                              f" or TabFact(case sensitive)")
+        # TabFact is a special case, because it has no metadata["question_id"] in its json files.
+        # So we need to add a question_id to each question.
         self.question_id = 0
         super().__init__(dataset_folder_name)
 
@@ -90,6 +92,6 @@ if __name__ == "__main__":
             choice = int(input("重复了。输入选择的数字 (1-4, 0结束输入): "))
 
     for choice in debug_list:
-        test_processor = VQA_WikiProcessor(debug_set[choice - 1])
+        test_processor = VQA_Wiki_TabFactProcessor(debug_set[choice - 1])
         test_processor.process_dataset(2)
 
