@@ -87,19 +87,19 @@ class BaseProcessor:
                 self.write_json(record_final)
                 self.write_index_file(pdf_name, record_final["id"], split_name)
 
-    def process_jsonl(self, split='', process_num=None):
+    def process_jsonl(self, split='', num_lines=None):
         file1_path = os.path.join(self.dataset_name, split, 'document.jsonl')
         file2_path = os.path.join(self.dataset_name, split, 'documents_content.jsonl')
 
         with open(file1_path, 'r', encoding="utf-8") as file1, open(file2_path, 'r', encoding="utf-8") as file2:
-            file_line_num = len(file1.readlines()) if process_num is None else process_num
+            file_line_num = len(file1.readlines()) if num_lines is None else num_lines
             bar = tqdm(enumerate(zip(file1, file2)), total=file_line_num, leave=False)
             for i, (line1, line2) in bar:
-                if i == process_num:
+                if i == num_lines:
                     break
                 self.process_line(split, line1, line2)
 
-    def process_dataset(self, num_lines):
+    def process_dataset(self, num_lines=None):
         self.clear_index_files()
         if not os.path.exists(self.dataset_name):
             raise FileNotFoundError(f"Dataset '{self.dataset_name}' not found."

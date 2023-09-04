@@ -12,17 +12,17 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
         self.question_id = 0
         super().__init__(dataset_folder_name)
 
-    def add_query(self, record_with_query, query):
-        question_id = str(query["metadata"]["question_id"]) if self.dataset_name != "TabFact" else str(self.question_id)
+    def add_query(self, record_with_query, annotation):
+        question_id = str(annotation["metadata"]["question_id"]) if self.dataset_name != "TabFact" else str(self.question_id)
         if self.dataset_name == "TabFact":
             self.question_id += 1
         record_with_query["id"] += '_' + question_id
         record_with_query["input"]["id"] += '_' + question_id
         record_with_query["input"]["uid"] += '_' + question_id
-        record_with_query["query"] = query["key"]
-        record_with_query["instruction"] = query["key"]
+        record_with_query["query"] = annotation["key"]
+        record_with_query["instruction"] = annotation["key"]
         record_with_query["output"] = []
-        for value_dict in query["values"]:
+        for value_dict in annotation["values"]:
             if "value_variants" in value_dict:
                 record_with_query["output"].extend(value_dict["value_variants"])
             else:
@@ -51,6 +51,7 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
 
         tokens = tokens_layer["tokens"]
         token_positions = tokens_layer["positions"]
+
         lines = tokens_layer["structures"]["lines"]
         structure_value = lines["structure_value"]
         seg_positions = lines["positions"]
