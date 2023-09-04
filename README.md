@@ -11,3 +11,5 @@
     小批量数据测试直接运行VQA_WikiProcessor.py/KIEProcessor.py 测试pdf文件已经包含在仓库里
 ### test.py
     运行此文件，验证每一个KIE问题只有一个答案。
+### 可能的问题
+    对于TabFact，output应该只有一个，那么使用list of strs，还是str？

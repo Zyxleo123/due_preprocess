@@ -28,7 +28,7 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
             else:
                 if self.dataset_name == "TabFact":
                     assert value_dict["value"] in ("0", "1")
-                    record_with_query["output"].append("yes" if value_dict["value"] == "1" else "no")
+                    record_with_query["output"] = "yes" if value_dict["value"] == "1" else "no"
                 else:
                     assert self.dataset_name == "WikiTableQuestions"
                     record_with_query["output"].append(value_dict["value"])
