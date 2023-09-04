@@ -8,6 +8,6 @@
     建立VQA_WikiProcessor实例，参数输入dataset名（有限制）。调用process_dataset()。
     KIEProcessor类似，额外输入一个prompt(比如"What is the")
 ### 小批量测试
-    小批量数据测试直接运行VQA_WikiProcessor.py/KIEProcessor.py 测试pdf文件已经包含在仓库里（除了kleister-charity的，pdf太多还没下载好。)
+    小批量数据测试直接运行VQA_WikiProcessor.py/KIEProcessor.py 测试pdf文件已经包含在仓库里
 ### test.py
     运行此文件，验证每一个KIE问题只有一个答案。
