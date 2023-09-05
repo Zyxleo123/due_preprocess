@@ -24,11 +24,14 @@ class KIEProcessor(BaseProcessor):
         record_init = {"id": full_id,
                        "input": {"id": full_id, "uid": full_id,
                                  "img": self.save_image(pdf_name)}}
+        compressed_width = record_init["input"]["img"]["width"]
+        compressed_height = record_init["input"]["img"]["height"]
         query_num = len(record_query['annotations'])
         ocr_num = len(record_ocr["contents"])
         for ocr_id in range(ocr_num):
             record_with_doc = deepcopy(record_init)
-            record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id])
+            record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id],
+                                           compressed_width, compressed_height)
             for query_id in range(query_num):
                 record_final = deepcopy(record_with_doc)
                 record_final = self.add_query(record_final, record_query['annotations'][query_id])
@@ -50,7 +53,7 @@ class KIEProcessor(BaseProcessor):
     dataset_ocr2tokens_layer_name = {"dee_te": "common_format", "dee_mi": "common_format", "dee_dj": "tokens_layer",
                                      "kle_te": "tokens_layer", "kle_mi": "common_format"}
 
-    def add_ocr(self, record_with_doc, content):
+    def add_ocr(self, record_with_doc, content, compressed_width, compressed_height):
         tool_name = content["tool_name"]
         dataset_name_and_tool_name = self.dataset_name.lower()[:3] + '_' + tool_name[:2]
         tokens_layer_name = self.dataset_ocr2tokens_layer_name.get(dataset_name_and_tool_name)
@@ -59,6 +62,13 @@ class KIEProcessor(BaseProcessor):
         record_with_doc["id"] += '_' + tool_name[:2]
         record_with_doc["input"]["id"] += '_' + tool_name[:2]
         record_with_doc["input"]["uid"] += '_' + tool_name[:2]
+
+        original_width = tokens_layer["structures"]["pages"]["positions"][0][2] - \
+                         tokens_layer["structures"]["pages"]["positions"][0][0]
+        original_height = tokens_layer["structures"]["pages"]["positions"][0][3] - \
+                          tokens_layer["structures"]["pages"]["positions"][0][1]
+        ratio_width = compressed_width / original_width
+        ratio_height = compressed_height / original_height
 
         tokens = tokens_layer["tokens"]
         token_positions = tokens_layer["positions"]
@@ -70,7 +80,7 @@ class KIEProcessor(BaseProcessor):
 
         document = []
         for line_idx in range(line_num):
-            cur_line_dict = {"id": line_idx, "box": self.get_box(seg_positions[line_idx])}
+            cur_line_dict = {"id": line_idx, "box": self.get_box(seg_positions[line_idx], ratio_width, ratio_height)}
 
             line_start_idx = structure_value[line_idx][0]
             line_end_idx = structure_value[line_idx][1]
@@ -79,7 +89,7 @@ class KIEProcessor(BaseProcessor):
             cur_line_dict_words = []
             for token_idx in range(line_start_idx, line_end_idx):
                 cur_line_dict_words_dict = {"id": token_idx,
-                                            "box": self.get_box(token_positions[token_idx]),
+                                            "box": self.get_box(token_positions[token_idx], ratio_width, ratio_height),
                                             "text": tokens[token_idx]}
                 cur_line_dict_words.append(cur_line_dict_words_dict)
 

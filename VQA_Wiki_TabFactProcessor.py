@@ -13,7 +13,8 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
         super().__init__(dataset_folder_name)
 
     def add_query(self, record_with_query, annotation):
-        question_id = str(annotation["metadata"]["question_id"]) if self.dataset_name != "TabFact" else str(self.question_id)
+        question_id = str(annotation["metadata"]["question_id"]) if self.dataset_name != "TabFact" else str(
+            self.question_id)
         if self.dataset_name == "TabFact":
             self.question_id += 1
         record_with_query["id"] += '_' + question_id
@@ -32,6 +33,10 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
                 else:
                     assert self.dataset_name == "WikiTableQuestions"
                     record_with_query["output"].append(value_dict["value"])
+        if isinstance(record_with_query["output"], list):
+            # Get the most frequent answer as the final answer. If there are multiple answers with the same frequency,
+            # choose randomly.
+            record_with_query["output"] = max(set(record_with_query["output"]), key=record_with_query["output"].count)
         return record_with_query
 
     dataset_ocr2tokens_layer_name = {"doc_te": "tokens_layer", "doc_mi": "common_format",
@@ -39,7 +44,7 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
                                      "wik_te": "common_format", "wik_mi": "common_format", "wik_dj": "tokens_layer",
                                      "tab_te": "common_format", "tab_mi": "common_format", "tab_dj": "tokens_layer"}
 
-    def add_ocr(self, record_with_doc, content):
+    def add_ocr(self, record_with_doc, content, compressed_width, compressed_height):
         tool_name = content["tool_name"]
         dataset_name_and_tool_name = self.dataset_name.lower()[:3] + '_' + tool_name[:2]
         tokens_layer_name = self.dataset_ocr2tokens_layer_name.get(dataset_name_and_tool_name)
@@ -48,6 +53,13 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
         record_with_doc["id"] += '_' + tool_name[:2]
         record_with_doc["input"]["id"] += '_' + tool_name[:2]
         record_with_doc["input"]["uid"] += '_' + tool_name[:2]
+
+        original_width = tokens_layer["structures"]["pages"]["positions"][0][2] - \
+                         tokens_layer["structures"]["pages"]["positions"][0][0]
+        original_height = tokens_layer["structures"]["pages"]["positions"][0][3] - \
+                          tokens_layer["structures"]["pages"]["positions"][0][1]
+        ratio_width = compressed_width / original_width
+        ratio_height = compressed_height / original_height
 
         tokens = tokens_layer["tokens"]
         token_positions = tokens_layer["positions"]
@@ -59,7 +71,7 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
 
         document = []
         for line_idx in range(line_num):
-            cur_line_dict = {"id": line_idx, "box": self.get_box(seg_positions[line_idx])}
+            cur_line_dict = {"id": line_idx, "box": self.get_box(seg_positions[line_idx], ratio_width, ratio_height)}
 
             line_start_idx = structure_value[line_idx][0]
             line_end_idx = structure_value[line_idx][1]
@@ -68,7 +80,7 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
             cur_line_dict_words = []
             for token_idx in range(line_start_idx, line_end_idx):
                 cur_line_dict_words_dict = {"id": token_idx,
-                                            "box": self.get_box(token_positions[token_idx]),
+                                            "box": self.get_box(token_positions[token_idx], ratio_width, ratio_height),
                                             "text": tokens[token_idx]}
                 cur_line_dict_words.append(cur_line_dict_words_dict)
 
@@ -95,4 +107,3 @@ if __name__ == "__main__":
     for choice in debug_list:
         test_processor = VQA_Wiki_TabFactProcessor(debug_set[choice - 1])
         test_processor.process_dataset(2)
-

@@ -24,16 +24,18 @@ class BaseProcessor:
             os.mkdir(self.images_dir)
 
     @staticmethod
-    def get_box(position):
-        x1, y1, x2, y2 = position[:]
-        return [[x1, y2], [x2, y2], [x2, y1], [x1, y1]]
+    def get_box(position, ratio_w, ratio_h):
+        x1, y1, x2, y2 = position[:]  # 左上右下
+        x1, x2 = int(x1 * ratio_w), int(x2 * ratio_w)
+        y1, y2 = int(y1 * ratio_h), int(y2 * ratio_h)
+        return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]  # 左上；右上；右下；左下
 
     def save_image(self, pdf_name):
         file_path = os.path.join(self.pdf_dir, f'{pdf_name}.pdf')
         img = convert_from_path(file_path)[0]
-        width, height = img.size
         fname = f'{pdf_name}.png'
-        img.save(os.path.join(self.images_dir, fname))
+        img.save(os.path.join(self.images_dir, fname), optimize=True, quality=50)
+        width, height = img.size
         return {"width": width, "height": height, "fname": fname}
 
     def write_json(self, processed_record):
@@ -76,11 +78,14 @@ class BaseProcessor:
         record_init = {"id": full_id,
                        "input": {"id": full_id, "uid": full_id,
                                  "img": self.save_image(pdf_name)}}
+        compressed_width = record_init["input"]["img"]["width"]
+        compressed_height = record_init["input"]["img"]["height"]
         query_num = len(record_query['annotations'])
         ocr_num = len(record_ocr["contents"])
         for ocr_id in range(ocr_num):
             record_with_doc = deepcopy(record_init)
-            record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id])
+            record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id],
+                                           compressed_width, compressed_height)
             for query_id in range(query_num):
                 record_final = deepcopy(record_with_doc)
                 record_final = self.add_query(record_final, record_query['annotations'][query_id])
