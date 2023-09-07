@@ -29,6 +29,8 @@ class KIEProcessor(BaseProcessor):
         record_ocr = json.loads(line2)
         # ------------------ 以下是重载的代码 ------------------
         if self.has_multipage(record_ocr):
+            if self.bar:
+                self.bar.update(1)
             return
         # kleister-charity的pdf_name是带多余的.pdf后缀的
         pdf_name = record_ocr["name"][:-4] if self.dataset_name == "kleister-charity" else record_ocr["name"]
