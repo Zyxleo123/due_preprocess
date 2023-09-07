@@ -1,5 +1,6 @@
 import os
 import json
+from PIL import Image
 from copy import deepcopy
 
 from tqdm import tqdm
@@ -38,9 +39,15 @@ class BaseProcessor:
     def save_image(self, pdf_name):
         file_path = os.path.join(self.pdf_dir, f'{pdf_name}.pdf')
         img = convert_from_path(file_path)[0]
+        width, height = img.size
+        if (width > 5000) or (height > 5000):
+            # equal scaling to 5000
+            ratio = min(5000 / width, 5000 / height)
+            width, height = int(width * ratio), int(height * ratio)
+            img = img.resize((width, height), Image.ANTIALIAS)
+
         fname = f'{pdf_name}.png'
         img.save(os.path.join(self.images_dir, fname), optimize=True, quality=50)
-        width, height = img.size
         return {"width": width, "height": height, "fname": fname}
 
     def write_json(self, processed_record):
