@@ -51,6 +51,8 @@ class KIEProcessor(BaseProcessor):
                 record_final = self.add_query(record_final, record_query['annotations'][query_id])
                 self.write_json(record_final)
                 self.write_index_file(pdf_name, record_final["id"], split_name)
+        if self.bar:
+            self.bar.update(1)
 
     def add_query(self, record_with_query, annotation):
         question_id = str(self.question_id)

@@ -12,6 +12,9 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
         self.question_id = 0
         super().__init__(dataset_folder_name)
 
+    def query_preprocess(self, query: str):
+        return query
+
     def add_query(self, record_with_query, annotation):
         question_id = str(annotation["metadata"]["question_id"]) if self.dataset_name != "TabFact" else str(
             self.question_id)
