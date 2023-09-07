@@ -30,6 +30,10 @@ class BaseProcessor:
         y1, y2 = int(y1 * ratio_h), int(y2 * ratio_h)
         return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]  # 左上；右上；右下；左下
 
+    @staticmethod
+    def query_preprocess(query: str):
+        raise NotImplementedError("Abstract method query_preprocess not implemented")
+
     def save_image(self, pdf_name):
         file_path = os.path.join(self.pdf_dir, f'{pdf_name}.pdf')
         img = convert_from_path(file_path)[0]
@@ -64,7 +68,7 @@ class BaseProcessor:
                 f"\t{os.path.join(self.dataset_name, 'jsons', json_file_name)}\n")
 
     def add_query(self, *args, **kwargs):
-        raise NotImplementedError("Abstravt method add_query not implemented")
+        raise NotImplementedError("Abstract method add_query not implemented")
 
     def add_ocr(self, *args, **kwargs):
         raise NotImplementedError("Abstract method add_ocr not implemented")

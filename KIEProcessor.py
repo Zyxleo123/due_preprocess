@@ -12,11 +12,25 @@ class KIEProcessor(BaseProcessor):
         self.prompt = prompt
         super().__init__(dataset_folder_name)
 
+    dataset_ocr2tokens_layer_name = {"dee_te": "common_format", "dee_mi": "common_format", "dee_dj": "tokens_layer",
+                                     "kle_te": "tokens_layer", "kle_mi": "common_format"}
+
+    @staticmethod
+    def query_preprocess(query: str):
+        return query.replace("_", " ")
+
+    def has_multipage(self, document_json):
+        tokens_layer = KIEProcessor.dataset_ocr2tokens_layer_name.get(self.dataset_name[:3].lower() + '_'
+                                                                      + document_json["contents"][0]["tool_name"][:2])
+        return len(document_json["contents"][0][tokens_layer]["structures"]["pages"]["structure_value"]) > 1
+
     def process_line(self, split, line1, line2):
         record_query = json.loads(line1)
         record_ocr = json.loads(line2)
         # ------------------ 以下是重载的代码 ------------------
-        # kleister-charity的pdf_name是带多余的.pdf后缀的（已确认）
+        if self.has_multipage(record_ocr):
+            return
+        # kleister-charity的pdf_name是带多余的.pdf后缀的
         pdf_name = record_ocr["name"][:-4] if self.dataset_name == "kleister-charity" else record_ocr["name"]
         # ------------------ 以上是重载的代码 ------------------
         split_name = record_query["split"]
@@ -44,14 +58,12 @@ class KIEProcessor(BaseProcessor):
         record_with_query["id"] += '_' + question_id
         record_with_query["input"]["id"] += '_' + question_id
         record_with_query["input"]["uid"] += '_' + question_id
-        record_with_query["query"] = self.prompt + ' ' + annotation["key"]
-        record_with_query["instruction"] = self.prompt + ' ' + annotation["key"]
+        key = self.query_preprocess(annotation["key"])
+        record_with_query["query"] = self.prompt + ' ' + key
+        record_with_query["instruction"] = self.prompt + ' ' + key
         assert len(annotation["values"]) == 1
         record_with_query["output"] = annotation["values"][0]["value"]
         return record_with_query
-
-    dataset_ocr2tokens_layer_name = {"dee_te": "common_format", "dee_mi": "common_format", "dee_dj": "tokens_layer",
-                                     "kle_te": "tokens_layer", "kle_mi": "common_format"}
 
     def add_ocr(self, record_with_doc, content, compressed_width, compressed_height):
         tool_name = content["tool_name"]
