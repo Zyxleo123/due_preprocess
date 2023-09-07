@@ -4,6 +4,7 @@ from copy import deepcopy
 
 from tqdm import tqdm
 from pdf2image import convert_from_path
+from multiprocessing.pool import ThreadPool
 
 
 class BaseProcessor:
@@ -91,18 +92,34 @@ class BaseProcessor:
                 record_final = self.add_query(record_final, record_query['annotations'][query_id])
                 self.write_json(record_final)
                 self.write_index_file(pdf_name, record_final["id"], split_name)
+        if self.bar:
+            self.bar.update(1)
 
     def process_jsonl(self, split='', num_lines=None):
         file1_path = os.path.join(self.dataset_name, split, 'document.jsonl')
         file2_path = os.path.join(self.dataset_name, split, 'documents_content.jsonl')
 
         with open(file1_path, 'r', encoding="utf-8") as file1, open(file2_path, 'r', encoding="utf-8") as file2:
-            file_line_num = len(file1.readlines()) if num_lines is None else num_lines
-            bar = tqdm(enumerate(zip(file1, file2)), total=file_line_num, leave=False)
-            for i, (line1, line2) in bar:
-                if i == num_lines:
-                    break
-                self.process_line(split, line1, line2)
+            file1, file2 = file1.readlines(), file2.readlines()
+            file_line_num = len(file1) if num_lines is None else num_lines
+            self.bar = tqdm(total=file_line_num, leave=False)
+
+            do_multiprocess = True
+            if do_multiprocess:
+                pool = ThreadPool(processes=16)
+                for i, (line1, line2) in enumerate(zip(file1, file2)):
+                    if i == file_line_num:
+                        break
+                    out = pool.apply_async(func=self.process_line, args=(split, line1, line2))
+                pool.close()
+                pool.join()
+            else:
+                for i, (line1, line2) in enumerate(zip(file1, file2)):
+                    if i == file_line_num:
+                        break
+                    self.process_line(split, line1, line2)
+
+            self.bar.close()
 
     def process_dataset(self, num_lines=None):
         self.clear_index_files()
