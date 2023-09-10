@@ -6,3 +6,15 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+/DeepForm/images
+/DeepForm/pdf
+/DeepForm/jsons
+/docvqa/images
+/docvqa/pdf
+/docvqa/jsons
+/infographics_vqa/images
+/infographics_vqa/pdf
+/infographics_vqa/jsons
+/kleister-charity/images
+/kleister-charity/pdf
+/kleister-charity/jsons

@@ -28,12 +28,12 @@ class KIEProcessor(BaseProcessor):
         record_query = json.loads(line1)
         record_ocr = json.loads(line2)
         # ------------------ 以下是重载的代码 ------------------
-        if self.has_multipage(record_ocr):
+        # kleister-charity的pdf_name是带多余的.pdf后缀的
+        pdf_name = record_ocr["name"][:-4] if self.dataset_name == "kleister-charity" else record_ocr["name"]
+        if pdf_name in self.processed_set or self.has_multipage(record_ocr):
             if self.bar:
                 self.bar.update(1)
             return
-        # kleister-charity的pdf_name是带多余的.pdf后缀的
-        pdf_name = record_ocr["name"][:-4] if self.dataset_name == "kleister-charity" else record_ocr["name"]
         # ------------------ 以上是重载的代码 ------------------
         split_name = record_query["split"]
         full_id = self.dataset_name + '_' + split + '_' + pdf_name
@@ -43,16 +43,25 @@ class KIEProcessor(BaseProcessor):
         compressed_width = record_init["input"]["img"]["width"]
         compressed_height = record_init["input"]["img"]["height"]
         query_num = len(record_query['annotations'])
+        # Choose microsoft_ocr over any other. If not found, choose tesseract.
         ocr_num = len(record_ocr["contents"])
+        ocr_id, flag = 0, False
         for ocr_id in range(ocr_num):
-            record_with_doc = deepcopy(record_init)
-            record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id],
-                                           compressed_width, compressed_height)
-            for query_id in range(query_num):
-                record_final = deepcopy(record_with_doc)
-                record_final = self.add_query(record_final, record_query['annotations'][query_id])
-                self.write_json(record_final)
-                self.write_index_file(pdf_name, record_final["id"], split_name)
+            if record_ocr["contents"][ocr_id]["tool_name"] == "microsoft_cv":
+                flag = True
+                break
+        if not flag:
+            for ocr_id in range(ocr_num):
+                if record_ocr["contents"][ocr_id]["tool_name"] == "tesseract":
+                    break
+        record_with_doc = record_init
+        record_with_doc = self.add_ocr(record_with_doc, record_ocr["contents"][ocr_id],
+                                       compressed_width, compressed_height)
+        for query_id in range(query_num):
+            record_final = deepcopy(record_with_doc)
+            record_final = self.add_query(record_final, record_query['annotations'][query_id])
+            self.write_json(record_final)
+            self.write_index_file(pdf_name, record_final["id"], split_name)
         if self.bar:
             self.bar.update(1)
 
@@ -116,6 +125,7 @@ class KIEProcessor(BaseProcessor):
         return record_with_doc
 
 
+test_amount = 200
 debug_set = ("kleister-charity", "DeepForm")
 if __name__ == "__main__":
     print("请选择调试哪些数据集:")
@@ -133,4 +143,4 @@ if __name__ == "__main__":
 
     for choice in debug_list:
         test_processor = KIEProcessor(debug_set[choice - 1], prompt)
-        test_processor.process_dataset(2)
+        test_processor.process_dataset(test_amount, splits=("train",))
