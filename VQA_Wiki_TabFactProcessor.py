@@ -95,6 +95,8 @@ class VQA_Wiki_TabFactProcessor(BaseProcessor):
 
 
 debug_set = ("docvqa", "infographics_vqa", "WikiTableQuestions", "TabFact")
+test_amount = 1000
+test_splits = ("test",)
 if __name__ == "__main__":
     print("请选择调试哪些数据集:")
     debug_list = []
@@ -108,5 +110,6 @@ if __name__ == "__main__":
             choice = int(input("重复了。输入选择的数字 (1-4, 0结束输入): "))
 
     for choice in debug_list:
-        test_processor = VQA_Wiki_TabFactProcessor(debug_set[choice - 1])
-        test_processor.process_dataset(2)
+        test_processor = VQA_Wiki_TabFactProcessor(debug_set[choice - 1],)
+        test_processor.process_dataset()
+
